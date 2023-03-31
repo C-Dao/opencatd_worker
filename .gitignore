@@ -103,9 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-# npm lock file
-package-lock.json
-yarn.lock
-
 # wrangler toml file
 wrangler.toml
