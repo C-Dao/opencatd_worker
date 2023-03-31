@@ -56,7 +56,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
       token: uuid(),
     };
 
-    await ctx.env.OPENCAT_DB.put(`key::id::${user.id}`, JSON.stringify(user), {
+    await ctx.env.OPENCAT_DB.put(`user::id::${user.id}`, JSON.stringify(user), {
       metadata: user,
     });
 
