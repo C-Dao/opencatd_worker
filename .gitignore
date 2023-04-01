@@ -105,3 +105,6 @@ dist
 
 # wrangler toml file
 wrangler.toml
+
+# vscode settings file
+.vscode/settings.json
