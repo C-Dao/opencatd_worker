@@ -187,7 +187,9 @@ export const openai: Record<
     req_headers.set("Authorization", "Bearer " + openaiToken);
 
     const request = new Request(
-      `${ctx.env.OPENAI_DOMAIN}${ctx.req.path}?${req_querys}`,
+      `${
+        ctx.env.OPENAI_DOMAIN ?? "https://api.openai.com"
+      }${ctx.req.path}?${req_querys}`,
       {
         method: ctx.req.method,
         headers: req_headers,
