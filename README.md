@@ -28,7 +28,7 @@
 ```sh
  npx wrangler kv:namespace create OPENCAT_DB
 ```
-### 5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV Id.
+### 5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.
 ```toml
  kv_namespaces = [{ binding = "OPENCAT_DB", id = "xxxxxxxxxxx" }]
 ```
