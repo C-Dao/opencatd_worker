@@ -11,7 +11,7 @@
 > This Project use Cloudflare KV as backend database. 
 
 ## Deploy
-
+>Before you begin, you need to have a Cloudflare account and be able to use Cloudflare Worker. Have a joy!
 ### 1. Git clone the repo and enter repo
 ```sh
  cd ./opencatd_worker
@@ -41,7 +41,7 @@
 
 ### 7. Use wrangler deploy
 ```sh
-yarn deploy
+ yarn deploy
 ```
 
 

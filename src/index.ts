@@ -23,7 +23,7 @@ keys.delete("/:id", controller.keys.delete);
 
 root.get("/", controller.root.whoami);
 
-openai.post("/*", controller.openai.proxy);
+openai.use("/*", controller.openai.proxy);
 
 middleware.root.use("*", controller.auth.root);
 middleware.openai.use("*", controller.auth.openai);

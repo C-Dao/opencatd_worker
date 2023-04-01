@@ -1,6 +1,7 @@
 import { Handler, MiddlewareHandler } from "hono";
-import { Bindings, DBConfig, Key, KeyK, User } from "./type";
+import { Bindings, DBConfig, Key, User } from "./type";
 import { uuid } from "@cfworker/uuid";
+import { StatusCode } from "hono/utils/http-status";
 
 export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
   async init(ctx) {
@@ -12,7 +13,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
         {
           error: "super user already exists, please input token",
         },
-        200
+        403
       );
     } else {
       const user: User = {
@@ -47,7 +48,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
       await ctx.env.OPENCAT_DB.getWithMetadata<DBConfig>("db::config");
 
     if (!dbConfig) {
-      return ctx.json({ error: "db config not initialized" });
+      return ctx.json({ error: "db config not initialized" }, 403);
     }
 
     const user: User = {
@@ -74,7 +75,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
     const id = ctx.req.param("id");
 
     if (id == undefined || isNaN(Number(id))) {
-      return ctx.json({ error: "id is not a number" });
+      return ctx.json({ error: "id is not a number" }, 403);
     }
 
     await ctx.env.OPENCAT_DB.delete(`user::id::${Number(id)}`);
@@ -88,7 +89,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
     );
 
     if (!user) {
-      return ctx.json({ error: "user not found" });
+      return ctx.json({ error: "user not found" }, 404);
     }
 
     user = { ...user, token: uuid() };
@@ -116,7 +117,7 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
       await ctx.env.OPENCAT_DB.getWithMetadata<DBConfig>("db::config");
 
     if (!dbConfig) {
-      return ctx.json({ error: "db metadata not initialized" });
+      return ctx.json({ error: "db metadata not initialized" }, 403);
     }
 
     const item: Key = {
@@ -144,7 +145,7 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
     const id = ctx.req.param("id");
 
     if (id == undefined || isNaN(Number(id))) {
-      return ctx.json({ error: "id is not a number" });
+      return ctx.json({ error: "id is not a number" }, 403);
     }
 
     await ctx.env.OPENCAT_DB.delete(`key::id::${Number(id)}`);
@@ -159,27 +160,37 @@ export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
     if (user) {
       return ctx.json(user.metadata);
     } else {
-      return ctx.json({ error: "not found root user, please init service" });
+      return ctx.json(
+        { error: "not found root user, please init service" },
+        404
+      );
     }
   },
 };
 
-export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
+export const openai: Record<
+  string,
+  MiddlewareHandler<{ Bindings: Bindings }>
+> = {
   async proxy(ctx) {
     const keys = await ctx.env.OPENCAT_DB.list<Key>({ prefix: "key::id::" });
     const randomIndex = Math.floor(Math.random() * keys.keys.length);
 
     const openaiToken = keys.keys[randomIndex].metadata?.key;
 
-    let req_headers = new Headers(ctx.req.headers);
+    const req_headers = new Headers(ctx.req.headers);
+    const req_querys = new URLSearchParams(ctx.req.query()).toString();
 
     req_headers.set("Authorization", "Bearer " + openaiToken);
 
-    const request = new Request(ctx.env.OPENAI_DOMAIN + ctx.req.path, {
-      body: ctx.req.body,
-      method: ctx.req.method,
-      headers: req_headers,
-    });
+    const request = new Request(
+      `${ctx.env.OPENAI_DOMAIN}${ctx.req.path}?${req_querys}`,
+      {
+        method: ctx.req.method,
+        headers: req_headers,
+        body: ctx.req.body,
+      }
+    );
 
     const response = await fetch(request);
 
@@ -190,11 +201,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
     ctx.header("access-control-allow-origin", "*");
     ctx.header("access-control-allow-credentials", "true");
 
-    if (response.ok) {
-      return ctx.body(response.body, 200);
-    } else {
-      return ctx.json({ error: JSON.stringify(await response.json()) }, 200);
-    }
+    return ctx.body(response.body, (response.status as StatusCode) || 200);
   },
 };
 
@@ -227,7 +234,6 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
 
   async openai(ctx, next) {
     const auth = ctx.req.header("Authorization");
-
     if (!auth || !auth.startsWith("Bearer")) {
       return ctx.json({ error: "Unauthorized" }, 401);
     }
