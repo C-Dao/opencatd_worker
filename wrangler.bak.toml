@@ -1,5 +1,5 @@
 name = "opencatd_worker"
-main = "src/index.ts"
+main = "cloudflare/index.ts"
 compatibility_date = "2023-03-30"
 routes = [{ pattern = "xxxxxxxx", custom_domain = true }]
 kv_namespaces = [{ binding = "OPENCAT_DB", id = "xxxxxxxxxxx" }]
