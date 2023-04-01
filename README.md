@@ -28,18 +28,18 @@
 ```sh
  npx wrangler kv:namespace create OPENCAT_DB
 ```
-### 5. Then, copy the created Cloudflare KV config into wrangler.toml
-```sh
+### 5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV Id.
+```toml
  kv_namespaces = [{ binding = "OPENCAT_DB", id = "xxxxxxxxxxx" }]
 ```
 
-### 6. Custom domain
-```sh
+### 6. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain
+```toml
  routes = [{ pattern = "xxxxxxxx", custom_domain = true }]
 ```
 
 
-### 6. Use wrangler deploy
+### 7. Use wrangler deploy
 ```sh
 yarn deploy
 ```
