@@ -1,4 +1,4 @@
-<h1 align="center">Deploy OpenCat for Team on Cloudflare Worker</h1>
+<h1 align="center">Deploy OpenCat for Team on the Edges</h1>
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
   <a href="/LICENSE.md" target="_blank">
@@ -6,11 +6,25 @@
   </a>
 </p>
 
-> This is a open source implement of [OpenCat for Team](https://opencat.app/) Backend. <br />
-> You can deploy this backend service on Cloudflare Worker. <br />
-> This Project use Cloudflare KV as backend database. 
+This is a open source implementation of [OpenCat for Team](https://opencat.app/) Backend for edge platforms.
 
-## Deploy
+Supported platforms:
+
+- Cloudflare Workers
+- Deno
+- Deno Deploy *(requires kv beta access)*
+
+This project uses Cloudflare KV or Deno KV as backend database.
+
+## Run locally with Deno
+
+You need to have Deno >= 1.32 installed.
+
+```sh
+ deno run -A --unstable deno/index.ts
+```
+
+## Deploy to Cloudflare Workers
 >Before you begin, you need to have a Cloudflare account and be able to use Cloudflare Worker. Have a joy!
 ### 1. Git clone the repo and enter repo
 ```sh
