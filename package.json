@@ -1,7 +1,8 @@
 {
   "name": "opencatd_worker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
+  "main": "src/server-worker.ts",
   "scripts": {
     "start": "wrangler dev",
     "deploy": "wrangler publish",
@@ -9,11 +10,11 @@
   },
   "dependencies": {
     "@cfworker/uuid": "^1.12.4",
-    "hono": "^3.1.0"
+    "hono": "^3.1.0",
+    "typescript": "^5.0.3"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230321.0",
-    "typescript": "^5.0.2",
     "vitest": "^0.29.8",
     "wrangler": "^2.13.0"
   }

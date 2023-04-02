@@ -1,16 +1,16 @@
 import { Hono } from "hono";
 import controller from "./controller.ts";
-import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
+import { Bindings } from "./type.ts";
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Bindings }>();
 const middleware = {
-  root: new Hono(),
-  openai: new Hono(),
+  root: new Hono<{ Bindings: Bindings }>(),
+  openai: new Hono<{ Bindings: Bindings }>(),
 };
-const users = new Hono();
-const keys = new Hono();
-const root = new Hono();
-const openai = new Hono();
+const users = new Hono<{ Bindings: Bindings }>();
+const keys = new Hono<{ Bindings: Bindings }>();
+const root = new Hono<{ Bindings: Bindings }>();
+const openai = new Hono<{ Bindings: Bindings }>();
 
 users.get("/", controller.users.get_all);
 users.post("/", controller.users.add);
@@ -38,4 +38,4 @@ app.route("/1/me", root);
 app.route("/v1", middleware.openai);
 app.route("/v1", openai);
 
-serve(app.fetch);
+export default app;
