@@ -20,28 +20,28 @@ This project uses Cloudflare KV or Deno KV as backend database.
 
 ## Deploy to Cloudflare Workers With Wrangler
 >Before you begin, you need to have a [Cloudflare](https://www.cloudflare.com/) account and be able to use [Cloudflare Workers](https://www.cloudflare.com/zh-cn/products/workers/). Have a joy!
-### 1. Git clone the repo and enter repo
+1. Git clone the repo and enter repo
 ```sh
  cd ./opencatd_worker
 ```
-### 2. Install dependencies
+2. Install dependencies
 ```sh
  yarn
 ```
-### 3. Copy `wrangler.toml.bak` to `wrangler.toml`
+3. Copy `wrangler.toml.bak` to `wrangler.toml`
 ```sh
  cp wrangler.toml.bak wrangler.toml
 ```
-### 4. Create Cloudflare KV Namespace 
+4. Create Cloudflare KV Namespace 
 ```sh
  npx wrangler kv:namespace create OPENCAT_DB
 ```
-### 5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.
+5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.
 ```toml
  kv_namespaces = [{ binding = "OPENCAT_DB", id = "xxxxxxxxxxx" }]
 ```
 
-### 6. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain
+6. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain
 ```toml
  routes = [{ pattern = "xxxxxxxx", custom_domain = true }]
 ```
