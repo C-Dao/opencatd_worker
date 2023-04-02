@@ -1,7 +1,3 @@
-export type UserK = `user::id::${number}` | `user::id`;
-export type KeyK = `key::id::${number}` | `key::id`;
-export type DBConfigK = `db::config`;
-export type PrefixK = `user::id` | `key::id` | DBConfigK;
 export type DBConfig = {
   user_id_count: number;
   key_id_count: number;
@@ -20,23 +16,21 @@ export type Key = {
 };
 
 export type Bindings = {
-  OPENCAT_DB: KVNamespace<UserK | KeyK | DBConfigK>;
+  OPENCAT_DB: KVNamespace;
   OPENAI_DOMAIN: string;
-  opencatDB: KV<UserK | KeyK | DBConfigK>;
+  kv: KV;
 };
 
-export interface KV<T extends string = string> {
+export interface KV<T extends (string | number)[] = (string | number)[]> {
   get<U>(key: T): Promise<{ value: U | null }>;
-  list<U>(
-    prefix: T
-  ): Promise<{ key: RemoveUnion<T, PrefixK>; value: U | undefined }[]>;
+  list<U>(prefix: T): Promise<{ key: T; value: U | undefined }[]>;
   put<U>(key: T, value: U): Promise<void>;
   atomicOpt(opts: AtomicOpt[]): Promise<boolean>;
   delete(key: T): Promise<void>;
 }
 
 declare global {
-  var opencatDB: KV<UserK | KeyK | DBConfigK>;
+  var kv: KV;
 }
 
 export type AtomicOpt = { action: AtomicOperation; args: any[] };

@@ -4,7 +4,7 @@ import { StatusCode } from "hono/utils/http-status";
 
 export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
   async init(ctx) {
-    const { value: user } = await ctx.env.opencatDB.get<User>("user::id::0");
+    const { value: user } = await ctx.env.kv.get<User>(["user", "id", 0]);
     if (user) {
       return ctx.json(
         {
@@ -24,10 +24,10 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
         key_id_count: 0,
       };
 
-      const ok = await ctx.env.opencatDB.atomicOpt([
+      const ok = await ctx.env.kv.atomicOpt([
         { action: "check", args: [] },
-        { action: "set", args: ["user::id::0", user] },
-        { action: "set", args: ["db::config", dbConfig] },
+        { action: "set", args: [["user", "id", 0], user] },
+        { action: "set", args: [["db", "config"], dbConfig] },
       ]);
 
       if (!ok) {
@@ -39,13 +39,13 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
   },
 
   async getAll(ctx) {
-    let users = await ctx.env.opencatDB.list<User>("user::id");
+    let users = await ctx.env.kv.list<User>(["user", "id"]);
     return ctx.json(users.map((user) => user.value));
   },
 
   async add(ctx) {
     const { name } = await ctx.req.json();
-    const dbConfigEntry = await ctx.env.opencatDB.get<DBConfig>("db::config");
+    const dbConfigEntry = await ctx.env.kv.get<DBConfig>(["db", "config"]);
 
     if (!dbConfigEntry.value) {
       return ctx.json({ error: "db config not initialized" }, 403);
@@ -62,10 +62,10 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
       user_id_count: dbConfigEntry.value.user_id_count + 1,
     };
 
-    const ok = await ctx.env.opencatDB.atomicOpt([
+    const ok = await ctx.env.kv.atomicOpt([
       { action: "check", args: [dbConfigEntry] },
-      { action: "set", args: [`user::id::${user.id}`, user] },
-      { action: "set", args: ["db::config", dbConfig] },
+      { action: "set", args: [["user", "id", user.id], user] },
+      { action: "set", args: [["db", "config"], dbConfig] },
     ]);
 
     if (!ok) {
@@ -82,16 +82,14 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
       return ctx.json({ error: "id is not a number" }, 403);
     }
 
-    await ctx.env.opencatDB.delete(`user::id::${Number(id)}`);
+    await ctx.env.kv.delete(["user", "id", Number(id)]);
 
     return ctx.json({ message: "ok" });
   },
 
   async reset(ctx) {
     const id = ctx.req.param("id");
-    const userEntry = await ctx.env.opencatDB.get<User>(
-      `user::id::${Number(id)}`
-    );
+    const userEntry = await ctx.env.kv.get<User>(["user", "id", Number(id)]);
 
     if (!userEntry.value) {
       return ctx.json({ error: "user not found" }, 404);
@@ -99,9 +97,9 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
 
     const user = { ...userEntry.value, token: crypto.randomUUID() };
 
-    const ok = await ctx.env.opencatDB.atomicOpt([
+    const ok = await ctx.env.kv.atomicOpt([
       { action: "check", args: [userEntry] },
-      { action: "set", args: [`user::id::${Number(id)}`, user] },
+      { action: "set", args: [["user", "id", Number(id)], user] },
     ]);
 
     if (!ok) {
@@ -114,13 +112,13 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
 
 export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
   async getAll(ctx) {
-    const keys = await ctx.env.opencatDB.list<Key>("key::id");
+    const keys = await ctx.env.kv.list<Key>(["key", "id"]);
     return ctx.json(keys.map((item) => item.value));
   },
 
   async add(ctx) {
     const { name, key } = await ctx.req.json();
-    let dbConfigEntry = await ctx.env.opencatDB.get<DBConfig>("db::config");
+    let dbConfigEntry = await ctx.env.kv.get<DBConfig>(["db", "config"]);
 
     if (!dbConfigEntry.value) {
       return ctx.json({ error: "db metadata not initialized" }, 403);
@@ -137,10 +135,10 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
       key_id_count: dbConfigEntry.value.key_id_count + 1,
     };
 
-    const ok = await ctx.env.opencatDB.atomicOpt([
+    const ok = await ctx.env.kv.atomicOpt([
       { action: "check", args: [dbConfigEntry] },
-      { action: "set", args: [`key::id::${item.id}`, item] },
-      { action: "set", args: ["db::config", dbConfig] },
+      { action: "set", args: [["key", "id", item.id], item] },
+      { action: "set", args: [["db", "config"], dbConfig] },
     ]);
 
     if (!ok) {
@@ -156,7 +154,7 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
       return ctx.json({ error: "id is not a number" }, 403);
     }
 
-    await ctx.env.opencatDB.delete(`key::id::${Number(id)}`);
+    await ctx.env.kv.delete(["key", "id", Number(id)]);
 
     return ctx.json({ message: "ok" });
   },
@@ -164,7 +162,7 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
 
 export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
   async whoami(ctx) {
-    let { value: user } = await ctx.env.opencatDB.get("user::id::0");
+    let { value: user } = await ctx.env.kv.get(["user", "id", 0]);
     if (user) {
       return ctx.json(user);
     } else {
@@ -178,7 +176,7 @@ export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
 
 export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
   async proxy(ctx) {
-    const keyEntries = await ctx.env.opencatDB.list<Key>("key::id");
+    const keyEntries = await ctx.env.kv.list<Key>(["key", "id"]);
     const randomIndex = Math.floor(Math.random() * keyEntries.length);
 
     const openaiToken = keyEntries[randomIndex].value?.key;
@@ -220,14 +218,14 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
 
     const token = auth.slice(7);
 
-    const { value: user } = await ctx.env.opencatDB.get<User>("user::id::0");
+    const { value: user } = await ctx.env.kv.get<User>(["user", "id", 0]);
 
     if (!user) {
       return ctx.json({ error: "Unauthorized" }, 401);
     }
 
     const existed = token === user.token;
-
+    console.log(token, user.token);
     if (existed) {
       return next();
     } else {
@@ -243,7 +241,7 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
 
     const token = auth.slice(7);
 
-    const users = await ctx.env.opencatDB.list<User>("user::id");
+    const users = await ctx.env.kv.list<User>(["user", "id"]);
 
     const existed = users.find((user) => user.value?.token === token);
     if (existed) {

@@ -1,44 +1,29 @@
-import {
-  AtomicOperation,
-  AtomicOpt,
-  KV,
-  PrefixK,
-  RemoveUnion,
-} from "../type.ts";
+import { AtomicOpt, KV } from "../type.ts";
 
-export class WorkerKV<Key extends string = string> implements KV<Key> {
-  constructor(private db: KVNamespace<Key>) {}
+export class WorkerKV implements KV {
+  constructor(private db: KVNamespace) {}
 
-  async get<Value>(key: Key) {
-    const { metadata } = await this.db.getWithMetadata<Value>(key);
+  async get<Value>(key: string[]) {
+    const { metadata } = await this.db.getWithMetadata<Value>(key.join("::"));
     return { value: metadata };
   }
 
-  async list<Value>(prefix: Key) {
-    const result: {
-      key: RemoveUnion<Key, PrefixK>;
-      value: Value | undefined;
-    }[] = [];
+  async list<Value>(prefix: string[]) {
+    const result = [];
     let cursor = undefined;
 
     while (true) {
-      const lists: KVNamespaceListResult<Value, Key> =
-        await this.db.list<Value>({
-          prefix,
-          cursor,
-        });
+      const lists: KVNamespaceListResult<Value> = await this.db.list<Value>({
+        prefix: prefix.join("::"),
+        cursor,
+      });
 
       const keyValue = lists.keys.map((item) => ({
-        key: item.name,
+        key: item.name.split("::"),
         value: item.metadata,
       }));
 
-      result.push(
-        ...(keyValue as {
-          key: RemoveUnion<Key, PrefixK>;
-          value: Value | undefined;
-        }[])
-      );
+      result.push(...keyValue);
 
       if ("cursor" in lists) {
         cursor = lists.cursor;
@@ -52,12 +37,14 @@ export class WorkerKV<Key extends string = string> implements KV<Key> {
     return result;
   }
 
-  async put<Value>(key: Key, value: Value) {
-    return this.db.put(key, JSON.stringify(value), { metadata: value });
+  async put<Value>(key: (string | number)[], value: Value) {
+    return this.db.put(key.join("::"), JSON.stringify(value), {
+      metadata: value,
+    });
   }
 
-  async delete(key: Key) {
-    return await this.db.delete(key);
+  async delete(key: (string | number)[]) {
+    return await this.db.delete(key.join("::"));
   }
 
   async atomicOpt(opts: AtomicOpt[]) {

@@ -6,8 +6,8 @@ import { Bindings } from "./type";
 const server_app = new Hono<{ Bindings: Bindings }>();
 
 server_app.use((ctx, next) => {
-  if (!ctx.env.opencatDB) {
-    ctx.env.opencatDB = new WorkerKV(ctx.env.OPENCAT_DB);
+  if (!ctx.env.kv) {
+    ctx.env.kv = new WorkerKV(ctx.env.OPENCAT_DB);
   }
 
   return next();

@@ -8,7 +8,7 @@ import { env } from "hono/adapter";
 
 await load();
 
-globalThis.opencatDB = new DenoKV(await Deno.openKv());
+globalThis.kv = new DenoKV(await Deno.openKv());
 
 const server_app = new Hono<{ Bindings: Bindings }, any>();
 
@@ -16,8 +16,8 @@ server_app.use((ctx, next) => {
   if (!ctx.env) {
     ctx.env = env(ctx);
   }
-  if (!ctx.env.opencatDB) {
-    ctx.env.opencatDB = globalThis.opencatDB;
+  if (!ctx.env.kv) {
+    ctx.env.kv = globalThis.kv;
   }
 
   return next();

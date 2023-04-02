@@ -1,49 +1,45 @@
-import { AtomicOpt, KV, PrefixK, RemoveUnion } from "../type.ts";
+import { AtomicOpt, KV } from "../type.ts";
 
-export class DenoKV<Key extends string = string> implements KV<Key> {
+export class DenoKV implements KV {
   constructor(private db: Deno.Kv) {}
 
   private atomic() {
     const atomicExec: Deno.AtomicOperation = this.db.atomic();
     return {
       atomicExec: atomicExec,
-      async check(...args: any[]) {
+      check(...args: Deno.AtomicCheck[]) {
         this.atomicExec = this.atomicExec.check(...args);
         return this;
       },
-      async set(key: Key, value: any) {
-        const keys = key.split("::");
-        this.atomicExec = this.atomicExec.set(keys, value);
+      set<U = unknown>(key: (string | number)[], value: U) {
+        this.atomicExec = this.atomicExec.set(key, value);
         return this;
       },
-      async delete(key: Key) {
-        const keys = key.split("::");
-        this.atomicExec = this.atomicExec.delete(keys);
+      delete(key: (string | number)[]) {
+        this.atomicExec = this.atomicExec.delete(key);
         return this;
       },
-      async commit() {
+      commit() {
         return this.atomicExec.commit();
       },
     };
   }
 
-  async get<Value>(key: Key) {
-    return await this.db.get<Value>(key.split("::"));
+  async get<Value>(key: (string | number)[]) {
+    return await this.db.get<Value>(key);
   }
 
-  async list<Value>(prefix: Key) {
-    const result = await collect(
-      this.db.list<Value>({ prefix: prefix.split("::") })
-    );
+  async list<Value>(prefix: (string | number)[]) {
+    const result = await collect(this.db.list<Value>({ prefix: prefix }));
 
     return result.map((item) => ({
-      key: item.key.join("::") as RemoveUnion<Key, PrefixK>,
+      key: item.key as (string | number)[],
       value: item.value,
     }));
   }
 
-  async put<Value>(key: Key, value: Value) {
-    await this.db.set(key.split("::"), value);
+  async put<Value>(key: (string | number)[], value: Value) {
+    await this.db.set(key, value);
     return;
   }
 
@@ -60,8 +56,8 @@ export class DenoKV<Key extends string = string> implements KV<Key> {
     return !!ok;
   }
 
-  async delete(key: Key): Promise<void> {
-    return await this.db.delete(key.split("::"));
+  async delete(key: (string | number)[]): Promise<void> {
+    return await this.db.delete(key);
   }
 }
 
