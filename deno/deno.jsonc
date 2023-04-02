@@ -1,6 +1,0 @@
-{
-  "tasks": {
-    "dev": "deno run -A --unstable --watch index.ts"
-  },
-  "importMap": "import_map.json"
-}
