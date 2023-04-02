@@ -6,26 +6,21 @@
   </a>
 </p>
 
-This is a open source implementation of [OpenCat for Team](https://opencat.app/) Backend for edge platforms.
+  
+
+
+This is a open source implementation of [OpenCat for Team](https://opencat.app/) backend for edge platforms.
 
 Supported platforms:
 
-- Cloudflare Workers
-- Deno
-- Deno Deploy *(requires kv beta access)*
+- [Cloudflare Workers](#deploy-to-cloudflare-workers)
+- [Deno](#run-locally-with-Deno)
+- [Deno Deploy]() *(requires kv beta access)*
 
 This project uses Cloudflare KV or Deno KV as backend database.
 
-## Run locally with Deno
-
-You need to have Deno >= 1.32 installed.
-
-```sh
- deno run -A --unstable deno/index.ts
-```
-
-## Deploy to Cloudflare Workers
->Before you begin, you need to have a Cloudflare account and be able to use Cloudflare Worker. Have a joy!
+## Deploy to Cloudflare Workers With Wrangler
+>Before you begin, you need to have a [Cloudflare](https://www.cloudflare.com/) account and be able to use [Cloudflare Workers](https://www.cloudflare.com/zh-cn/products/workers/). Have a joy!
 ### 1. Git clone the repo and enter repo
 ```sh
  cd ./opencatd_worker
@@ -34,9 +29,9 @@ You need to have Deno >= 1.32 installed.
 ```sh
  yarn
 ```
-### 3. Copy `wrangler.bak.toml` to `wrangler.toml`
+### 3. Copy `wrangler.toml.bak` to `wrangler.toml`
 ```sh
- cp wrangler.bak.toml wrangler.toml
+ cp wrangler.toml.bak wrangler.toml
 ```
 ### 4. Create Cloudflare KV Namespace 
 ```sh
@@ -58,7 +53,26 @@ You need to have Deno >= 1.32 installed.
  yarn deploy
 ```
 
+## Run locally with Deno
+>You need to have Deno >= 1.32 installed.
 
+### 1. Install Deno
+MacOS user can use under command line to install deno. [Read the official document to learn more](https://deno.land/manual@v1.32.3/getting_started/installation#download-and-install) 
+```sh
+ brew install deno
+```
+### 2. Run with Deno
+```sh
+ deno run -A --unstable src/server-deno.ts
+```
+
+## Deploy to Deno Deploy
+
+> You need to have Deno >= 1.32 installed.
+
+```sh
+ deno run -A --unstable src/server-deno.ts
+```
 ## Dev
 Run `yarn start` to start development
 ```sh

@@ -22,8 +22,7 @@ export type Key = {
 export type Bindings = {
   OPENCAT_DB: KVNamespace<UserK | KeyK | DBConfigK>;
   OPENAI_DOMAIN: string;
-  KV: KV<UserK | KeyK | DBConfigK>;
-  uuid: () => string;
+  opencatDB: KV<UserK | KeyK | DBConfigK>;
 };
 
 export interface KV<T extends string = string> {
@@ -36,15 +35,12 @@ export interface KV<T extends string = string> {
   delete(key: T): Promise<void>;
 }
 
+declare global {
+  var opencatDB: KV<UserK | KeyK | DBConfigK>;
+}
+
 export type AtomicOpt = { action: AtomicOperation; args: any[] };
 
 export type AtomicOperation = "check" | "delete" | "set";
-
-declare global {
-  function getMiniflareBindings(): Bindings;
-  function tokenGen(): string;
-  const OPENCAT_DB: KVNamespace<UserK | KeyK | DBConfigK>;
-  var opencatDB: KV<UserK | KeyK | DBConfigK>;
-}
 
 export type RemoveUnion<T, U> = T extends U ? never : T;

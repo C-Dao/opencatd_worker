@@ -1,10 +1,10 @@
 import { Handler, MiddlewareHandler } from "hono";
-import { Bindings, DBConfig, Key, User } from "./type.ts";
+import { Bindings, DBConfig, Key, User } from "../type.ts";
 import { StatusCode } from "hono/utils/http-status";
 
 export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
   async init(ctx) {
-    const { value: user } = await opencatDB.get<User>("user::id::0");
+    const { value: user } = await ctx.env.opencatDB.get<User>("user::id::0");
     if (user) {
       return ctx.json(
         {
@@ -16,7 +16,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
       const user: User = {
         id: 0,
         name: "root",
-        token: tokenGen(),
+        token: crypto.randomUUID(),
       };
 
       const dbConfig: DBConfig = {
@@ -24,7 +24,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
         key_id_count: 0,
       };
 
-      const ok = await opencatDB.atomicOpt([
+      const ok = await ctx.env.opencatDB.atomicOpt([
         { action: "check", args: [] },
         { action: "set", args: ["user::id::0", user] },
         { action: "set", args: ["db::config", dbConfig] },
@@ -38,14 +38,14 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
     }
   },
 
-  async get_all(ctx) {
-    let users = await opencatDB.list<User>("user::id");
+  async getAll(ctx) {
+    let users = await ctx.env.opencatDB.list<User>("user::id");
     return ctx.json(users.map((user) => user.value));
   },
 
   async add(ctx) {
     const { name } = await ctx.req.json();
-    const dbConfigEntry = await opencatDB.get<DBConfig>("db::config");
+    const dbConfigEntry = await ctx.env.opencatDB.get<DBConfig>("db::config");
 
     if (!dbConfigEntry.value) {
       return ctx.json({ error: "db config not initialized" }, 403);
@@ -54,7 +54,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
     const user: User = {
       id: dbConfigEntry.value.user_id_count + 1,
       name,
-      token: tokenGen(),
+      token: crypto.randomUUID(),
     };
 
     const dbConfig = {
@@ -62,7 +62,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
       user_id_count: dbConfigEntry.value.user_id_count + 1,
     };
 
-    const ok = await opencatDB.atomicOpt([
+    const ok = await ctx.env.opencatDB.atomicOpt([
       { action: "check", args: [dbConfigEntry] },
       { action: "set", args: [`user::id::${user.id}`, user] },
       { action: "set", args: ["db::config", dbConfig] },
@@ -82,22 +82,24 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
       return ctx.json({ error: "id is not a number" }, 403);
     }
 
-    await opencatDB.delete(`user::id::${Number(id)}`);
+    await ctx.env.opencatDB.delete(`user::id::${Number(id)}`);
 
     return ctx.json({ message: "ok" });
   },
 
   async reset(ctx) {
     const id = ctx.req.param("id");
-    const userEntry = await opencatDB.get<User>(`user::id::${Number(id)}`);
+    const userEntry = await ctx.env.opencatDB.get<User>(
+      `user::id::${Number(id)}`
+    );
 
     if (!userEntry.value) {
       return ctx.json({ error: "user not found" }, 404);
     }
 
-    const user = { ...userEntry.value, token: tokenGen() };
+    const user = { ...userEntry.value, token: crypto.randomUUID() };
 
-    const ok = await opencatDB.atomicOpt([
+    const ok = await ctx.env.opencatDB.atomicOpt([
       { action: "check", args: [userEntry] },
       { action: "set", args: [`user::id::${Number(id)}`, user] },
     ]);
@@ -111,14 +113,14 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
 };
 
 export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
-  async get_all(ctx) {
-    const keys = await opencatDB.list("key::id");
+  async getAll(ctx) {
+    const keys = await ctx.env.opencatDB.list<Key>("key::id");
     return ctx.json(keys.map((item) => item.value));
   },
 
   async add(ctx) {
     const { name, key } = await ctx.req.json();
-    let dbConfigEntry = await opencatDB.get<DBConfig>("db::config");
+    let dbConfigEntry = await ctx.env.opencatDB.get<DBConfig>("db::config");
 
     if (!dbConfigEntry.value) {
       return ctx.json({ error: "db metadata not initialized" }, 403);
@@ -130,16 +132,12 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
       name,
     };
 
-    await ctx.env.OPENCAT_DB.put(`key::id::${item.id}`, JSON.stringify(item), {
-      metadata: item,
-    });
-
     const dbConfig = {
       ...dbConfigEntry.value,
       key_id_count: dbConfigEntry.value.key_id_count + 1,
     };
 
-    const ok = await opencatDB.atomicOpt([
+    const ok = await ctx.env.opencatDB.atomicOpt([
       { action: "check", args: [dbConfigEntry] },
       { action: "set", args: [`key::id::${item.id}`, item] },
       { action: "set", args: ["db::config", dbConfig] },
@@ -158,7 +156,7 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
       return ctx.json({ error: "id is not a number" }, 403);
     }
 
-    await opencatDB.delete(`key::id::${Number(id)}`);
+    await ctx.env.opencatDB.delete(`key::id::${Number(id)}`);
 
     return ctx.json({ message: "ok" });
   },
@@ -166,7 +164,7 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
 
 export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
   async whoami(ctx) {
-    let { value: user } = await opencatDB.get("user::id::0");
+    let { value: user } = await ctx.env.opencatDB.get("user::id::0");
     if (user) {
       return ctx.json(user);
     } else {
@@ -178,26 +176,23 @@ export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
   },
 };
 
-export const openai: Record<
-  string,
-  MiddlewareHandler<{ Bindings: Bindings }>
-> = {
+export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
   async proxy(ctx) {
-    const keyEntries = await opencatDB.list<Key>("key::id");
-    const randomIndex = Math.floor(Math.random() * keys.keys.length);
+    const keyEntries = await ctx.env.opencatDB.list<Key>("key::id");
+    const randomIndex = Math.floor(Math.random() * keyEntries.length);
 
     const openaiToken = keyEntries[randomIndex].value?.key;
 
-    const req_headers = new Headers(ctx.req.headers);
-    const req_querys = new URLSearchParams(ctx.req.query()).toString();
+    const reqHeaders = new Headers(ctx.req.headers);
+    const reqQuerys = new URLSearchParams(ctx.req.query()).toString();
 
-    req_headers.set("Authorization", "Bearer " + openaiToken);
+    reqHeaders.set("Authorization", "Bearer " + openaiToken);
 
     const request = new Request(
-      `${ctx.env.OPENAI_DOMAIN}${ctx.req.path}?${req_querys}`,
+      `${ctx.env.OPENAI_DOMAIN}${ctx.req.path}?${reqQuerys}`,
       {
         method: ctx.req.method,
-        headers: req_headers,
+        headers: reqHeaders,
         body: ctx.req.body,
       }
     );
@@ -225,7 +220,7 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
 
     const token = auth.slice(7);
 
-    const { value: user } = await opencatDB.get<User>("user::id::0");
+    const { value: user } = await ctx.env.opencatDB.get<User>("user::id::0");
 
     if (!user) {
       return ctx.json({ error: "Unauthorized" }, 401);
@@ -248,7 +243,7 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
 
     const token = auth.slice(7);
 
-    const users = await opencatDB.list<User>("user::id");
+    const users = await ctx.env.opencatDB.list<User>("user::id");
 
     const existed = users.find((user) => user.value?.token === token);
     if (existed) {

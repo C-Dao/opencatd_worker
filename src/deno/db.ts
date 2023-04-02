@@ -1,6 +1,6 @@
-import { AtomicOpt, KV, PrefixK, RemoveUnion } from "../core/type.ts";
+import { AtomicOpt, KV, PrefixK, RemoveUnion } from "../type.ts";
 
-export class KVDeno<Key extends string = string> implements KV<Key> {
+export class DenoKV<Key extends string = string> implements KV<Key> {
   constructor(private db: Deno.Kv) {}
 
   private atomic() {

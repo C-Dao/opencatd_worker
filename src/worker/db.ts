@@ -4,9 +4,9 @@ import {
   KV,
   PrefixK,
   RemoveUnion,
-} from "../core/type.ts";
+} from "../type.ts";
 
-export class KVWorker<Key extends string = string> implements KV<Key> {
+export class WorkerKV<Key extends string = string> implements KV<Key> {
   constructor(private db: KVNamespace<Key>) {}
 
   async get<Value>(key: Key) {
@@ -70,10 +70,9 @@ export class KVWorker<Key extends string = string> implements KV<Key> {
           //@ts-ignore
           action = "put";
         }
-        return this.db[
-          action as RemoveUnion<AtomicOperation, "check" | "set">
-          //@ts-ignore
-        ](...args);
+
+        //@ts-ignore
+        return this[action](...args);
       })
     );
 

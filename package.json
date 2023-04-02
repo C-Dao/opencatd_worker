@@ -9,7 +9,6 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@cfworker/uuid": "^1.12.4",
     "hono": "^3.1.0",
     "typescript": "^5.0.3"
   },

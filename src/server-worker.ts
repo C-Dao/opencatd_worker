@@ -1,7 +1,18 @@
 import app from "./core/index";
-import { uuid } from "@cfworker/uuid";
-import { KVWorker } from "./worker/db";
+import { WorkerKV } from "./worker/db";
+import { Hono } from "hono";
+import { Bindings } from "./type";
 
-globalThis.tokenGen = uuid;
-globalThis.opencatDB = new KVWorker(OPENCAT_DB);
-export default app;
+const server_app = new Hono<{ Bindings: Bindings }>();
+
+server_app.use((ctx, next) => {
+  if (!ctx.env.opencatDB) {
+    ctx.env.opencatDB = new WorkerKV(ctx.env.OPENCAT_DB);
+  }
+
+  return next();
+});
+
+server_app.route("/", app);
+
+export default server_app;
