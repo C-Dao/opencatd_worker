@@ -4,7 +4,7 @@
     "hono/": "https://deno.land/x/hono@v3.1.5/",
     "deno/server": "https://deno.land/std@0.182.0/http/server.ts",
     "hono/utils/http-status": "https://deno.land/x/hono@v3.1.5/utils/http-status.ts",
-    "dotenv": "https://deno.land/std@0.182.0/dotenv/mod.ts",
+    "dotenv/load": "https://deno.land/std@0.182.0/dotenv/load.ts",
     "hono/adapter": "https://deno.land/x/hono@v3.1.5/adapter.ts"
   }
 }
