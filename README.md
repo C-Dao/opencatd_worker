@@ -8,46 +8,48 @@
   
 
 
-This is a open source implementation of [OpenCat for Team](https://opencat.app/) backend for edge platforms.
+**This is a open source implementation of [OpenCat for Team](https://opencat.app/) backend for edge platforms.**
 
-Supported platforms:
 
-- [Cloudflare Workers](#deploy-to-cloudflare-workers-with-wrangler)
-- [Deno](#run-locally-with-deno)
-- [Deno Deploy](#deploy-to-deno-deploy-with-deployctl) *(requires kv beta access)*
+**Supported platforms:**
 
-This project uses Cloudflare KV or Deno KV as backend database.
+- **[Cloudflare Workers](#deploy-to-cloudflare-workers-with-wrangler)**
+- **[Deno](#run-locally-with-deno)**
+- **[Deno Deploy](#deploy-to-deno-deploy-with-deployctl) *(requires kv beta access)***
+
+*This project uses Cloudflare KV or Deno KV as backend database.*
 
 ## Deploy to Cloudflare Workers With Wrangler
 >Before you begin, you need to have a [Cloudflare](https://www.cloudflare.com/) account and be able to use [Cloudflare Workers](https://www.cloudflare.com/zh-cn/products/workers/). Have a joy!
-1. Git clone the repo and enter repo
+
+**1. Git clone the repo and enter repo**
 ```sh
  cd ./opencatd_worker
 ```
-2. Install dependencies
+**2. Install dependencies**
 ```sh
  yarn
 ```
-3. Copy `wrangler.toml.bak` to `wrangler.toml`
+**3. Copy `wrangler.toml.bak` to `wrangler.toml`**
 ```sh
  cp wrangler.toml.bak wrangler.toml
 ```
-4. Create Cloudflare KV Namespace 
+**4. Create Cloudflare KV Namespace**
 ```sh
  npx wrangler kv:namespace create OPENCAT_DB
 ```
-5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.
+**5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.**
 ```toml
  kv_namespaces = [{ binding = "OPENCAT_DB", id = "xxxxxxxxxxx" }]
 ```
 
-6. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain
+**6. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain**
 ```toml
  routes = [{ pattern = "xxxxxxxx", custom_domain = true }]
 ```
 
 
-### 7. Use wrangler deploy
+**7. Use wrangler deploy**
 ```sh
  yarn deploy
 ```
@@ -55,12 +57,12 @@ This project uses Cloudflare KV or Deno KV as backend database.
 ## Run locally with Deno
 >You need to have Deno >= 1.32 installed.
 
-### 1. Install Deno
-MacOS user can use under command line to install deno. [Read the official document to learn more](https://deno.land/manual@v1.32.3/getting_started/installation#download-and-install) 
+**1. Install Deno**
+> MacOS user can use under command line to install deno. [Read the official document to learn more](https://deno.land/manual@v1.32.3/getting_started/installation#download-and-install) 
 ```sh
  brew install deno
 ```
-### 2. Run with Deno
+**2. Run with Deno**
 > Just running it, Deno includes a kv database on the local environment. [learning more, you can see the comments](https://github.com/C-Dao/opencatd_worker/pull/2#issuecomment-1493372743).
 ```sh
  deno run -A --unstable src/server-deno.ts
@@ -71,23 +73,24 @@ MacOS user can use under command line to install deno. [Read the official docume
 > You need to have Deno >= 1.32 installed.<br/>
 > [Learning how to use Deployctl](https://deno.com/deploy/docs/deployctl)
 
-### 1. Install Deno
-MacOS user can use under command line to install deno. [Read the official document to learn more](https://deno.land/manual@v1.32.3/getting_started/installation#download-and-install) 
+**1. Install Deno**
+> MacOS user can use under command line to install deno. [Read the official document to learn more](https://deno.land/manual@v1.32.3/getting_started/installation#download-and-install) 
 ```sh
  brew install deno
 ```
-### 2. Install deployctl
+
+**2. Install deployctl**
 ```sh
 deno install --allow-read --allow-write --allow-env --allow-net --allow-run --no-check -r -f https://deno.land/x/deploy/deployctl.ts
 ```
-### 3. Deploy
+**3. Deploy**
 
 ```sh
 deployctl deploy --project=opencat_worker src/server-deno.ts
 ```
 
 ## Contribution
-Run `yarn start` to start development
+> Run `yarn start` to start development
 ```sh
  yarn start
 ```
