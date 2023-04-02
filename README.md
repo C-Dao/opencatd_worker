@@ -80,6 +80,4 @@ Run `yarn start` to start development
 ```
 
 ## License
-
-Copyright © 2023 [BenMix](https://github.com/C-Dao).<br />
 This project is [MIT](./LICENSE) licensed.

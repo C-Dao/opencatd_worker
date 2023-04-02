@@ -15,6 +15,7 @@
     "https://deno.land/std@0.182.0/collections/without_all.ts": "a89f5da0b5830defed4f59666e188df411d8fece35a5f6ca69be6ca71a95c185",
     "https://deno.land/std@0.182.0/dotenv/mod.ts": "8dcbc8a40b896a0bf094582aaeadbfc76d3528872faf2efc0302beb1d2f6afd0",
     "https://deno.land/std@0.182.0/http/server.ts": "cbb17b594651215ba95c01a395700684e569c165a567e4e04bba327f41197433",
+    "https://deno.land/x/hono@v3.1.5/adapter.ts": "2689b0b19530315b97ef67c4873dd46587a60572892022b429a1d63d7385911e",
     "https://deno.land/x/hono@v3.1.5/client/client.ts": "c279ae0fd26bc10989bb9ad9025eb22db6317530c09ffdb3e59c0a932534f3ce",
     "https://deno.land/x/hono@v3.1.5/client/index.ts": "7ad089b121f2613a0eaedd3d8aa8307a48bf3bf48f6c38281d6e73ee35f0d7ea",
     "https://deno.land/x/hono@v3.1.5/client/types.ts": "ccf9ae6ae9aa0be5f3254143a3e7a7ac7b0c1c69c65ef2f72e76b01de101c741",
