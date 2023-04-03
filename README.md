@@ -34,24 +34,23 @@
 ```sh
  cp wrangler.toml.bak wrangler.toml
 ```
-**4. Copy .env.bak to .env**
-```sh
- cp .env.bak .env
-```
-**5. Create Cloudflare KV Namespace**
+**4. Create Cloudflare KV Namespace**
 ```sh
  npx wrangler kv:namespace create OPENCAT_DB
 ```
-**6. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.**
+**5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.**
 ```toml
- kv_namespaces = [{ binding = "OPENCAT_DB", id = "xxxxxxxxxxx" }]
+[[kv_namespaces]]
+binding = "OPENCAT_DB"
+id = "xxxxx"
 ```
 
-**7. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain**
+**6. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain**
 ```toml
- routes = [{ pattern = "xxxxxxxx", custom_domain = true }]
+[[routes]]
+pattern = "xxxxx"
+custom_domain = true
 ```
-
 
 **7. Use wrangler deploy**
 ```sh
@@ -71,7 +70,7 @@
  cp .env.bak .env
 ```
 **3. Run with Deno**
-> Just running it, Deno includes a kv database on the local environment. [learning more, you can see the comments](https://github.com/C-Dao/opencatd_worker/pull/2#issuecomment-1493372743).
+> Just do it, Deno includes a kv database on the local environment, deno kv database likes a localStorage, you can simple use it. [learning more, you can see the comments](https://github.com/C-Dao/opencatd_worker/pull/2#issuecomment-1493372743).
 ```sh
  deno run -A --unstable src/server-deno.ts
 ```
