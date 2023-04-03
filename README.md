@@ -8,7 +8,7 @@
   
 
 
-**This is a open source implementation of [OpenCat for Team](https://opencat.app/) backend for edge platforms.**
+**This is an open source implementation of [OpenCat for Team](https://opencat.app/) backend for edge platforms.**
 
 
 **Supported platforms:**

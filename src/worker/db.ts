@@ -48,16 +48,12 @@ export class WorkerKV implements KV {
   }
 
   async atomicOpt(opts: AtomicOpt[]) {
+    /** this is not a transaction, just simple operation. its atomicity is not guaranteed */
     await Promise.all(
       opts.map(({ action, args }) => {
         if (action === "check") {
           return;
         }
-        if (action === "set") {
-          //@ts-ignore
-          action = "put";
-        }
-
         //@ts-ignore
         return this[action](...args);
       })
