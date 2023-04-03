@@ -35,6 +35,6 @@ declare global {
 
 export type AtomicOpt = { action: AtomicOperation; args: any[] };
 
-export type AtomicOperation = "check" | "delete" | "set";
+export type AtomicOperation = "check" | "delete" | "put";
 
 export type RemoveUnion<T, U> = T extends U ? never : T;

@@ -11,7 +11,7 @@ export class DenoKV implements KV {
         this.atomicExec = this.atomicExec.check(...args);
         return this;
       },
-      set<U = unknown>(key: (string | number)[], value: U) {
+      put<U = unknown>(key: (string | number)[], value: U) {
         this.atomicExec = this.atomicExec.set(key, value);
         return this;
       },
@@ -47,7 +47,8 @@ export class DenoKV implements KV {
     let atomicExec = this.atomic();
 
     opts.map(({ action, args }) => {
-      // @ts-ignore
+      // deno-lint-ignore ban-ts-comment
+      //@ts-ignore
       atomicExec = atomicExec[action](...args);
     });
 

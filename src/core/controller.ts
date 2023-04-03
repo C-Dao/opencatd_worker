@@ -26,8 +26,8 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
 
       const ok = await ctx.env.kv.atomicOpt([
         { action: "check", args: [] },
-        { action: "set", args: [["user", "id", 0], user] },
-        { action: "set", args: [["db", "config"], dbConfig] },
+        { action: "put", args: [["user", "id", 0], user] },
+        { action: "put", args: [["db", "config"], dbConfig] },
       ]);
 
       if (!ok) {
@@ -64,8 +64,8 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
 
     const ok = await ctx.env.kv.atomicOpt([
       { action: "check", args: [dbConfigEntry] },
-      { action: "set", args: [["user", "id", user.id], user] },
-      { action: "set", args: [["db", "config"], dbConfig] },
+      { action: "put", args: [["user", "id", user.id], user] },
+      { action: "put", args: [["db", "config"], dbConfig] },
     ]);
 
     if (!ok) {
@@ -99,7 +99,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
 
     const ok = await ctx.env.kv.atomicOpt([
       { action: "check", args: [userEntry] },
-      { action: "set", args: [["user", "id", Number(id)], user] },
+      { action: "put", args: [["user", "id", Number(id)], user] },
     ]);
 
     if (!ok) {
@@ -137,8 +137,8 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
 
     const ok = await ctx.env.kv.atomicOpt([
       { action: "check", args: [dbConfigEntry] },
-      { action: "set", args: [["key", "id", item.id], item] },
-      { action: "set", args: [["db", "config"], dbConfig] },
+      { action: "put", args: [["key", "id", item.id], item] },
+      { action: "put", args: [["db", "config"], dbConfig] },
     ]);
 
     if (!ok) {
