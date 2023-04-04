@@ -201,9 +201,6 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
       ctx.header(...header);
     }
 
-    ctx.header("access-control-allow-origin", "*");
-    ctx.header("access-control-allow-credentials", "true");
-
     return ctx.body(response.body, (response.status as StatusCode) || 200);
   },
 };
@@ -234,6 +231,17 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
   },
 
   async openai(ctx, next) {
+    if (ctx.req.method === "OPTIONS") {
+      ctx.res.headers.append("access-control-allow-origin", "*");
+      ctx.res.headers.append("access-control-allow-credentials", "true");
+      ctx.res.headers.append("access-control-allow-headers", "*");
+
+      return new Response(null, {
+        headers: ctx.res.headers,
+        status: 204,
+      });
+    }
+
     const auth = ctx.req.header("Authorization");
     if (!auth || !auth.startsWith("Bearer")) {
       return ctx.json({ error: "Unauthorized" }, 401);
