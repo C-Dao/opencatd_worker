@@ -10,7 +10,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
         {
           error: "super user already exists, please input token",
         },
-        403
+        403,
       );
     } else {
       const user: User = {
@@ -113,7 +113,13 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
 export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
   async getAll(ctx) {
     const keys = await ctx.env.kv.list<Key>(["key", "id"]);
-    return ctx.json(keys.map((item) => item.value));
+    const fillZeroKeys = keys.map((item) => {
+      const key = item.value as Key;
+      const len = key.key.length;
+      key.key = `${key.key.split("").fill("0", 7, len - 4).join("")}`;
+      return key;
+    });
+    return ctx.json(fillZeroKeys);
   },
 
   async add(ctx) {
@@ -168,7 +174,7 @@ export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
     } else {
       return ctx.json(
         { error: "not found root user, please init service" },
-        404
+        404,
       );
     }
   },
@@ -192,7 +198,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
         method: ctx.req.method,
         headers: reqHeaders,
         body: ctx.req.body,
-      }
+      },
     );
 
     const response = await fetch(request);
@@ -222,7 +228,6 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
     }
 
     const existed = token === user.token;
-    console.log(token, user.token);
     if (existed) {
       return next();
     } else {
