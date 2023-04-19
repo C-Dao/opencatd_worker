@@ -1,6 +1,49 @@
 import { Handler, MiddlewareHandler } from "hono";
-import { Bindings, DBConfig, Key, User } from "../type.ts";
+import {
+  Bindings,
+  DBConfig,
+  Key,
+  Usages,
+  UsagesResp,
+  UsagesVersion,
+  User,
+} from "../type.ts";
 import { StatusCode } from "hono/utils/http-status";
+
+const versions_billing = {
+  "gpt-4": { prompt: 0.03 / 1000, completion: 0.06 / 1000 },
+  "gpt-4-0314": { prompt: 0.03 / 1000, completion: 0.06 / 1000 },
+  "gpt-4-32k": { prompt: 0.06 / 1000, completion: 0.12 / 1000 },
+  "gpt-4-32k-0314": { prompt: 0.03 / 1000, completion: 0.12 / 1000 },
+  "gpt-3.5-turbo": { prompt: 0.002 / 1000, completion: 0.002 / 1000 },
+  "gpt-3.5-turbo-0301": { prompt: 0.002 / 1000, completion: 0.002 / 1000 },
+};
+
+const calcTokens = (usages: UsagesVersion[] = []) => {
+  return usages.reduce((prev, cur) => {
+    return prev + cur.prompt.tokens + cur.completion.tokens;
+  }, 0);
+};
+
+const calcCost = (usages: UsagesVersion[] = []) => {
+  return usages.reduce((prev, cur) => {
+    return prev + cur.prompt.cost + cur.completion.cost;
+  }, 0);
+};
+
+export const usages: Record<string, Handler<{ Bindings: Bindings }>> = {
+  async getAll(ctx) {
+    let usages = await ctx.env.kv.list<Usages>(["usages", "id"]);
+    const resp: UsagesResp[] = usages.map((item) => {
+      return {
+        userId: item.value!.user_id,
+        totalUint: calcTokens(item.value?.usages_version),
+        cost: calcCost(item.value?.usages_version).toFixed(7),
+      };
+    });
+    return ctx.json(resp);
+  },
+};
 
 export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
   async init(ctx) {
@@ -10,7 +53,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
         {
           error: "super user already exists, please input token",
         },
-        403,
+        403
       );
     } else {
       const user: User = {
@@ -116,7 +159,10 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
     const fillZeroKeys = keys.map((item) => {
       const key = item.value as Key;
       const len = key.key.length;
-      key.key = `${key.key.split("").fill("0", 7, len - 4).join("")}`;
+      key.key = `${key.key
+        .split("")
+        .fill("0", 7, len - 4)
+        .join("")}`;
       return key;
     });
     return ctx.json(fillZeroKeys);
@@ -174,7 +220,7 @@ export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
     } else {
       return ctx.json(
         { error: "not found root user, please init service" },
-        404,
+        404
       );
     }
   },
@@ -184,21 +230,63 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
   async proxy(ctx) {
     const keyEntries = await ctx.env.kv.list<Key>(["key", "id"]);
     const randomIndex = Math.floor(Math.random() * keyEntries.length);
-
+    const token = ctx.req.header("Authorization")?.slice(7);
     const openaiToken = keyEntries[randomIndex].value?.key;
+    const user = (await ctx.env.kv.list<User>(["user", "id"])).find(
+      (it) => it.value?.token === token
+    );
+
+    if (!user?.value) {
+      return ctx.json({ error: "not found user, user is no exsit" }, 404);
+    }
+
+    let { value: usages } = await ctx.env.kv.get<Usages>([
+      "usages",
+      "id",
+      user.value.id,
+    ]);
+
+    if (!usages) {
+      usages = {
+        user_id: user.value.id,
+        usages_version: [],
+      };
+    }
 
     const reqHeaders = new Headers(ctx.req.headers);
     const reqQuerys = new URLSearchParams(ctx.req.query()).toString();
 
     reqHeaders.set("Authorization", "Bearer " + openaiToken);
 
+    let counts = {
+      version: "",
+      prompt: { tokens: 0, cost: 0 },
+      completion: { tokens: 0, cost: 0 },
+    };
+
+    const reqTransform = new TransformStream({
+      async transform(chunk, controller) {
+        const json: any = JSON.parse(new TextDecoder().decode(chunk));
+        const messages = json.messages.map((msg: any) => msg.content);
+        counts.version = json.model;
+        counts.prompt.tokens = await ctx.env.countLen(messages.join(""));
+        counts.prompt.cost =
+          versions_billing[counts.version as keyof typeof versions_billing]
+            .prompt * counts.prompt.tokens;
+        controller.enqueue(chunk);
+      },
+    });
+
     const request = new Request(
       `${ctx.env.OPENAI_DOMAIN}${ctx.req.path}?${reqQuerys}`,
       {
         method: ctx.req.method,
         headers: reqHeaders,
-        body: ctx.req.body,
-      },
+        body:
+          ctx.req.path === "/v1/chat/completions"
+            ? ctx.req.body?.pipeThrough(reqTransform) || null
+            : ctx.req.body,
+      }
     );
 
     const response = await fetch(request);
@@ -207,7 +295,52 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
       ctx.header(...header);
     }
 
-    return ctx.body(response.body, (response.status as StatusCode) || 200);
+    let allContent = "";
+
+    const respTransform = new TransformStream({
+      async transform(chunk, controller) {
+        const jsonString = `"${new TextDecoder().decode(chunk).slice(6)}"`;
+        if (!jsonString.startsWith('"{') || !jsonString.endsWith('}"')) {
+          controller.enqueue(chunk);
+          return;
+        }
+        const json = JSON.parse(jsonString);
+        allContent += json.choices.map((it: any) => it.dekta.content).join("");
+        controller.enqueue(chunk);
+      },
+      flush: async () => {
+        counts.completion.tokens += await ctx.env.countLen(allContent);
+        counts.completion.cost =
+          versions_billing[counts.version as keyof typeof versions_billing]
+            .completion * counts.completion.tokens;
+
+        const index = usages!.usages_version.findIndex(
+          (item) => item.version === counts.version
+        );
+
+        if (~index) {
+          usages!.usages_version[index].prompt.tokens += counts.prompt.tokens;
+          usages!.usages_version[index].completion.tokens +=
+            counts.completion.tokens;
+          usages!.usages_version[index].completion.cost +=
+            counts.completion.cost;
+          usages!.usages_version[index].prompt.cost += counts.prompt.cost;
+        } else {
+          usages!.usages_version.push(counts);
+        }
+
+        await ctx.env.kv.atomicOpt([
+          { action: "put", args: [["usages", "id", usages!.user_id], usages] },
+        ]);
+      },
+    });
+
+    return ctx.body(
+      ctx.req.path === "/v1/chat/completions"
+        ? response.body?.pipeThrough(respTransform) || null
+        : response.body,
+      (response.status as StatusCode) || 200
+    );
   },
 };
 
@@ -248,6 +381,7 @@ export const auth: Record<string, MiddlewareHandler<{ Bindings: Bindings }>> = {
     }
 
     const auth = ctx.req.header("Authorization");
+
     if (!auth || !auth.startsWith("Bearer")) {
       return ctx.json({ error: "Unauthorized" }, 401);
     }
@@ -271,4 +405,5 @@ export default {
   keys,
   root,
   auth,
+  usages,
 };
