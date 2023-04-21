@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"esModuleInterop": true,
+		"strict": true,
+		"noEmit": true,
+		"lib": [
+			"esnext"
+		],
+		"types": [
+			"@cloudflare/workers-types"
+		],
+		"forceConsistentCasingInFileNames": true,
+		"allowImportingTsExtensions": true
+	}
+}

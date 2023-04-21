@@ -10,5 +10,9 @@ custom_domain = true
 binding = "OPENCAT_DB"
 id = "xxxxx"
 
+[[services]]
+binding = "gpt_tokens"
+service = "gpt_tokens_worker"
+
 [vars]
 OPENAI_DOMAIN = "https://api.openai.com"

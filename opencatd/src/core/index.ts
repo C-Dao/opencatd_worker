@@ -11,6 +11,9 @@ const users = new Hono<{ Bindings: Bindings }>();
 const keys = new Hono<{ Bindings: Bindings }>();
 const root = new Hono<{ Bindings: Bindings }>();
 const openai = new Hono<{ Bindings: Bindings }>();
+const usages = new Hono<{Bindings: Bindings}>();
+
+usages.get('/', controller.usages.getAll);
 
 users.get("/", controller.users.getAll);
 users.post("/", controller.users.add);
@@ -34,6 +37,7 @@ app.route("/1", middleware.root);
 app.route("/1/users", users);
 app.route("/1/keys", keys);
 app.route("/1/me", root);
+app.route("/1/usages", usages);
 
 app.route("/v1", middleware.openai);
 app.route("/v1", openai);

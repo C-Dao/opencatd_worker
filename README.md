@@ -28,9 +28,9 @@
 ```
 **2. Install dependencies**
 ```sh
- yarn
+ pnpm install
 ```
-**3. Copy `wrangler.toml.bak` to `wrangler.toml`**
+**3.Cd './opencatd', Copy `wrangler.toml.bak` to `wrangler.toml`**
 ```sh
  cp wrangler.toml.bak wrangler.toml
 ```
@@ -54,7 +54,12 @@ custom_domain = true
 
 **7. Use wrangler deploy**
 ```sh
- yarn deploy
+ pnpm run deploy
+```
+
+**8. Enable Tokens Count Service**
+``sh
+ cd ../gpt_tokens && pnpm run deploy
 ```
 
 ## Run locally with Deno
@@ -72,7 +77,7 @@ custom_domain = true
 **3. Run with Deno**
 > Just do it, Deno includes a kv database on the local environment, deno kv database likes a localStorage, you can simple use it. [learning more, you can see the comments](https://github.com/C-Dao/opencatd_worker/pull/2#issuecomment-1493372743).
 ```sh
- deno run -A --unstable src/server-deno.ts
+ cd ./opencatd && deno run -A --unstable src/server-deno.ts
 ```
 
 ## Deploy to Deno Deploy with Deployctl
@@ -93,13 +98,7 @@ deno install --allow-read --allow-write --allow-env --allow-net --allow-run --no
 **3. Deploy**
 
 ```sh
-deployctl deploy --project=opencat_worker src/server-deno.ts
-```
-
-## Contribution
-> Run `yarn start` to start development
-```sh
- yarn start
+ cd ./opencatd && deployctl deploy --project=opencat_worker src/server-deno.ts
 ```
 
 ## License

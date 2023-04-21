@@ -9,6 +9,23 @@ export type User = {
   token: string;
 };
 
+export type UsagesResp = {
+  userId: number;
+  totalUint: number;
+  cost: string;
+};
+
+export type Usages = {
+  user_id: number;
+  usages_version: UsagesVersion[];
+};
+
+export type UsagesVersion = {
+  version: string;
+  prompt: { tokens: number; cost: number };
+  completion: { tokens: number; cost: number };
+};
+
 export type Key = {
   id: number;
   name: string;
@@ -19,6 +36,8 @@ export type Bindings = {
   OPENCAT_DB: KVNamespace;
   OPENAI_DOMAIN: string;
   kv: KV;
+  countLen: (text: string) => Promise<number>;
+  gpt_tokens: ServiceWorkerGlobalScope;
 };
 
 export interface KV<T extends (string | number)[] = (string | number)[]> {
@@ -31,6 +50,9 @@ export interface KV<T extends (string | number)[] = (string | number)[]> {
 
 declare global {
   var kv: KV;
+  var countLen:
+    | ((text: string) => Promise<number>)
+    | ((text: string) => number);
 }
 
 export type AtomicOpt = { action: AtomicOperation; args: any[] };
