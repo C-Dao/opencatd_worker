@@ -58,7 +58,7 @@ custom_domain = true
 ```
 
 **8. Enable Tokens Count Service**
-``sh
+```sh
  cd ../gpt_tokens && pnpm run deploy
 ```
 
