@@ -30,36 +30,35 @@
 ```sh
  pnpm install
 ```
-**3.Cd './opencatd', Copy `wrangler.toml.bak` to `wrangler.toml`**
+**3. Enable Tokens Count Service**
 ```sh
- cp wrangler.toml.bak wrangler.toml
+ cd ./gpt_tokens && cp wrangler.toml.bak wrangler.toml && pnpm run deploy
 ```
-**4. Create Cloudflare KV Namespace**
+**4. Go in './opencatd', Copy `wrangler.toml.bak` to `wrangler.toml`**
+```sh
+ cd ../opencatd && cp wrangler.toml.bak wrangler.toml
+```
+**5. Create Cloudflare KV Namespace**
 ```sh
  npx wrangler kv:namespace create OPENCAT_DB
 ```
-**5. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.**
+**6. Then, copy the created Cloudflare KV config into wrangler.toml, replace 'xxxx...' into your created Cloudflare KV ID.**
 ```toml
 [[kv_namespaces]]
 binding = "OPENCAT_DB"
 id = "xxxxx"
 ```
 
-**6. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain**
+**7. Custom domain, edit the route configuration in wrangler.toml, rename "xxxxxx..." into your custom domain**
 ```toml
 [[routes]]
 pattern = "xxxxx"
 custom_domain = true
 ```
 
-**7. Use wrangler deploy**
+**8. Use wrangler deploy**
 ```sh
  pnpm run deploy
-```
-
-**8. Enable Tokens Count Service**
-```sh
- cd ../gpt_tokens && pnpm run deploy
 ```
 
 ## Run locally with Deno
