@@ -1,0 +1,3 @@
+name = "gpt_tokens_worker"
+main = "src/index.ts"
+compatibility_date = "2023-04-21"
