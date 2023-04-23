@@ -264,16 +264,21 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
       completion: { tokens: 0, cost: 0 },
     };
 
+    let allReqContent = "";
+
     const reqTransform = new TransformStream({
       async transform(chunk, controller) {
-        const json: any = JSON.parse(new TextDecoder().decode(chunk));
+        allReqContent += new TextDecoder().decode(chunk);
+        controller.enqueue(chunk);
+      },
+      async flush() {
+        const json: any = JSON.parse(allReqContent);
         const messages = json.messages.map((msg: any) => msg.content);
         counts.version = json.model;
         counts.prompt.tokens = await ctx.env.countLen(messages.join(""));
         counts.prompt.cost =
           versions_billing[counts.version as keyof typeof versions_billing]
             .prompt * counts.prompt.tokens;
-        controller.enqueue(chunk);
       },
     });
 
@@ -308,7 +313,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
         allContent += json.choices.map((it: any) => it.dekta.content).join("");
         controller.enqueue(chunk);
       },
-      flush: async () => {
+      async flush() {
         counts.completion.tokens += await ctx.env.countLen(allContent);
         counts.completion.cost =
           versions_billing[counts.version as keyof typeof versions_billing]
