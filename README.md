@@ -34,7 +34,7 @@
 ```sh
  cd ./gpt_tokens && cp wrangler.toml.bak wrangler.toml && pnpm run deploy
 ```
-**4. Go in './opencatd', Copy `wrangler.toml.bak` to `wrangler.toml`**
+**4. Go into "./opencatd", Copy `wrangler.toml.bak` to `wrangler.toml`**
 ```sh
  cd ../opencatd && cp wrangler.toml.bak wrangler.toml
 ```
