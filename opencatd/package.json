@@ -9,13 +9,14 @@
     "test": "vitest"
   },
   "dependencies": {
+    "eventsource-parser": "^1.0.0",
     "gpt3-tokenizer": "^1.1.5",
     "hono": "^3.1.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230321.0",
-    "vitest": "^0.29.8",
     "typescript": "^5.0.3",
+    "vitest": "^0.29.8",
     "wrangler": "2.16.0"
   }
 }

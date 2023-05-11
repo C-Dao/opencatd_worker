@@ -1,4 +1,5 @@
 import { Handler, MiddlewareHandler } from "hono";
+import { createParser } from 'eventsource-parser';
 import {
   Bindings,
   DBConfig,
@@ -301,16 +302,28 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
     }
 
     let allContent = "";
+    const decoder = new TextDecoder();
+    function onParse(event: any) {
+      if (event.type === "event") {
+        const data = event.data;
+        // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
+        if (data === "[DONE]") {
+          return;
+        }
+        try {
+          const json = JSON.parse(data);
+          // 拼接所有响应
+          allContent += json.choices.map((it: any) => it.delta.content).join('');
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    const parser = createParser(onParse);
 
     const respTransform = new TransformStream({
       async transform(chunk, controller) {
-        const jsonString = `"${new TextDecoder().decode(chunk).slice(6)}"`;
-        if (!jsonString.startsWith('"{') || !jsonString.endsWith('}"')) {
-          controller.enqueue(chunk);
-          return;
-        }
-        const json = JSON.parse(jsonString);
-        allContent += json.choices.map((it: any) => it.dekta.content).join("");
+        parser.feed(decoder.decode(chunk, { stream: true }));
         controller.enqueue(chunk);
       },
       async flush() {
