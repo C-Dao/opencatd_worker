@@ -1,5 +1,5 @@
 import { Handler, MiddlewareHandler } from "hono";
-import { createParser } from 'eventsource-parser';
+import { createParser } from "eventsource-parser";
 import {
   Bindings,
   DBConfig,
@@ -313,7 +313,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
         try {
           const json = JSON.parse(data);
           // 拼接所有响应
-          allContent += json.choices.map((it: any) => it.delta.content).join('');
+          allContent += json.choices.map((it: any) => it.delta.content).join("");
         } catch (e) {
           console.error(e);
         }
