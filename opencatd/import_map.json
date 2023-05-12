@@ -6,6 +6,7 @@
     "hono/utils/http-status": "https://deno.land/x/hono@v3.1.5/utils/http-status.ts",
     "dotenv/load": "https://deno.land/std@0.182.0/dotenv/load.ts",
     "hono/adapter": "https://deno.land/x/hono@v3.1.5/adapter.ts",
-    "hono/middleware": "https://deno.land/x/hono@v3.1.5/middleware.ts"
+    "hono/middleware": "https://deno.land/x/hono@v3.1.5/middleware.ts",
+    "eventsource-parser": "npm:eventsource-parser@1.0.0"
   }
 }
