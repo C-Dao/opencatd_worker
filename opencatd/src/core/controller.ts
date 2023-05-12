@@ -54,7 +54,7 @@ export const users: Record<string, Handler<{ Bindings: Bindings }>> = {
         {
           error: "super user already exists, please input token",
         },
-        403
+        403,
       );
     } else {
       const user: User = {
@@ -160,10 +160,12 @@ export const keys: Record<string, Handler<{ Bindings: Bindings }>> = {
     const fillZeroKeys = keys.map((item) => {
       const key = item.value as Key;
       const len = key.key.length;
-      key.key = `${key.key
-        .split("")
-        .fill("0", 7, len - 4)
-        .join("")}`;
+      key.key = `${
+        key.key
+          .split("")
+          .fill("0", 7, len - 4)
+          .join("")
+      }`;
       return key;
     });
     return ctx.json(fillZeroKeys);
@@ -221,7 +223,7 @@ export const root: Record<string, Handler<{ Bindings: Bindings }>> = {
     } else {
       return ctx.json(
         { error: "not found root user, please init service" },
-        404
+        404,
       );
     }
   },
@@ -234,7 +236,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
     const token = ctx.req.header("Authorization")?.slice(7);
     const openaiToken = keyEntries[randomIndex].value?.key;
     const user = (await ctx.env.kv.list<User>(["user", "id"])).find(
-      (it) => it.value?.token === token
+      (it) => it.value?.token === token,
     );
 
     if (!user?.value) {
@@ -288,11 +290,10 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
       {
         method: ctx.req.method,
         headers: reqHeaders,
-        body:
-          ctx.req.path === "/v1/chat/completions"
-            ? ctx.req.body?.pipeThrough(reqTransform) || null
-            : ctx.req.body,
-      }
+        body: ctx.req.path === "/v1/chat/completions"
+          ? ctx.req.body?.pipeThrough(reqTransform) || null
+          : ctx.req.body,
+      },
     );
 
     const response = await fetch(request);
@@ -303,7 +304,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
 
     let allContent = "";
     const decoder = new TextDecoder();
-    function onParse(event: any) {
+    const parser = createParser((event: any) => {
       if (event.type === "event") {
         const data = event.data;
         // https://beta.openai.com/docs/api-reference/completions/create#completions/create-stream
@@ -312,14 +313,15 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
         }
         try {
           const json = JSON.parse(data);
-          // 拼接所有响应
-          allContent += json.choices.map((it: any) => it.delta.content).join("");
+          // concat all chunks
+          allContent += json.choices.map((it: any) => it.delta.content).join(
+            "",
+          );
         } catch (e) {
           console.error(e);
         }
       }
-    }
-    const parser = createParser(onParse);
+    });
 
     const respTransform = new TransformStream({
       async transform(chunk, controller) {
@@ -333,7 +335,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
             .completion * counts.completion.tokens;
 
         const index = usages!.usages_version.findIndex(
-          (item) => item.version === counts.version
+          (item) => item.version === counts.version,
         );
 
         if (~index) {
@@ -357,7 +359,7 @@ export const openai: Record<string, Handler<{ Bindings: Bindings }>> = {
       ctx.req.path === "/v1/chat/completions"
         ? response.body?.pipeThrough(respTransform) || null
         : response.body,
-      (response.status as StatusCode) || 200
+      (response.status as StatusCode) || 200,
     );
   },
 };

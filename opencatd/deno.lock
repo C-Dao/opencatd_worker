@@ -75,6 +75,8 @@
   "npm": {
     "specifiers": {
       "@cloudflare/workers-types@^4.20230321.0": "@cloudflare/workers-types@4.20230404.0",
+      "eventsource-parser@1.0.0": "eventsource-parser@1.0.0",
+      "eventsource-parser@^1.0.0": "eventsource-parser@1.0.0",
       "gpt-token-utils": "gpt-token-utils@1.2.0",
       "gpt-token-utils@^1.2.0": "gpt-token-utils@1.2.0",
       "gpt3-tokenizer@1.1.5": "gpt3-tokenizer@1.1.5",
@@ -705,6 +707,10 @@
       },
       "estree-walker@0.6.1": {
         "integrity": "sha512-SqmZANLWS0mnatqbSfRP5g8OXZC12Fgg1IwNtLsyHDzJizORW4khDfjPqJZsemPWBB2uqykUah5YpQ6epsqC/w==",
+        "dependencies": {}
+      },
+      "eventsource-parser@1.0.0": {
+        "integrity": "sha512-9jgfSCa3dmEme2ES3mPByGXfgZ87VbP97tng1G2nWwWx6bV2nYxm2AWCrbQjXToSe+yYlqaZNtxffR9IeQr95g==",
         "dependencies": {}
       },
       "execa@6.1.0": {
